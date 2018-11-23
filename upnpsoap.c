@@ -823,6 +823,21 @@ object_exists(const char *object)
 	return (ret > 0);
 }
 
+static void
+getItemTitle(char* dest, const char* title, const char* season, const char* episode)
+{
+	char search[8];
+	sprintf(search, "x%02d", episode ? atoi(episode) : 0);
+	if (IS_ZERO(episode) || strstr(title, search))
+	{
+		sprintf(dest, "%s", title);
+	}
+	else
+	{
+		sprintf(dest, "%s. %s", episode, title);
+	}
+}
+
 #define COLUMNS "o.DETAIL_ID, o.CLASS," \
                 " d.SIZE, d.TITLE, d.DURATION, d.BITRATE, d.SAMPLERATE, d.ARTIST," \
                 " d.ALBUM, d.GENRE, d.COMMENT, d.CHANNELS, d.TRACK, d.DATE, d.RESOLUTION," \
@@ -1002,10 +1017,12 @@ callback(void *args, int argc, char **argv, char **azColName)
 		if( refID && (passed_args->filter & FILTER_REFID) ) {
 			ret = strcatf(str, " refID=\"%s\"", refID);
 		}
+		char formattedTitle[512];
+		getItemTitle(formattedTitle, title, disc, track);
 		ret = strcatf(str, "&gt;"
 		                   "&lt;dc:title&gt;%s&lt;/dc:title&gt;"
 		                   "&lt;upnp:class&gt;object.%s&lt;/upnp:class&gt;",
-		                   title, class);
+		                   formattedTitle, class);
 		if( comment && (passed_args->filter & FILTER_DC_DESCRIPTION) ) {
 			ret = strcatf(str, "&lt;dc:description&gt;%.384s&lt;/dc:description&gt;", comment);
 		}
