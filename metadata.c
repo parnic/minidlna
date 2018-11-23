@@ -1578,6 +1578,38 @@ video_no_dlna:
 			p = s + 1;
 		}
 	}
+	// also search for season and episode in the format #x#, e.g. 1x01, 12x104
+	if (!m.disc && !m.track)
+	{
+		char *p = (char*)name, *s;
+		while ((s = strpbrk(p, "x")))
+		{
+			unsigned season = (s - name > 2) ? strtoul(s-2, &p, 10) : 0;
+			unsigned episode = 0;
+			if ((season == 0 || season > -season) && (s - name > 1))
+			{
+				season = strtoul(s-1, &p, 10);
+			}
+			if (season > 0 && p)
+			{
+				while (isblank(*p) || ispunct(*p))
+				{
+					p++;
+				}
+				if (*p == 'x')
+				{
+					episode = strtoul(p+1, NULL, 10);
+				}
+			}
+			if (season && episode)
+			{
+				m.disc = season;
+				m.track = episode;
+				break;
+			}
+			p = s + 1;
+		}
+	}
 
 	album_art = find_album_art(path, m.thumb_data, m.thumb_size);
 	freetags(&video);
